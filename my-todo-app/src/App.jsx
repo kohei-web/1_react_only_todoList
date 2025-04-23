@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import './App.css'
 
 // デフォルトで表示されているtodoList
@@ -18,12 +18,15 @@ const todoLength = todoList.length
 
 function App() {
 
-  // 入力中のテキストの状態管理
-  const [ text, setTexts ] = useState("");
   // todoListの状態管理
   const [ todos, setTodos ] = useState(todoList);
+  // 入力中のテキストの状態管理
+  const [ text, setTexts ] = useState("");
   // todoLengthをid値として保持するための状態管理
   const [ uniqueId, setUniqueId ] = useState(todoLength);
+  // 検索キーワードの状態管理
+  const [ searchText, setSearchText ] = useState("");
+
 
   // 新しいtodoListを追加する処理
   const addTodoList = (todo) => {
@@ -43,7 +46,7 @@ function App() {
       const todo = {
           id: originalId,
           title: text
-        };
+      };
 
       // 生成したtodoをtodoListに追加する処理を呼び出す
       addTodoList(todo);
@@ -56,6 +59,21 @@ function App() {
     }
   }
 
+  // 検索処理後のtodoListを自動的に作成
+  const filteredTodos = useMemo(() => {
+    // フィルタリング処理に該当したtodoだけを抜き取って新しい配列として作成して返す
+    return todos.filter((todo) => {
+      // javascript標準正規表現用のオブジェクトRegExpを使用
+      // ^:前方一致
+      // i:大文字小文字は無視
+      const regexp = new RegExp("^" + searchText, "i")
+      // todoの配列のtitleにmatch(reaExp(正規表現))したものだけ返す
+      return todo.title.match(regexp)
+    });
+
+    // useMemoはいずれかの値が変更された時にtodos, searchTextの値を使用して第一引数の関数を再計算する処理
+  }, [todos, searchText]);
+
   return (
     <>
       <div>
@@ -63,6 +81,7 @@ function App() {
         {/* todoListの入力欄 */}
         <input
           type='text'
+          // 入力中のテキスト：useStateで状態管理している
           value={text}
           onChange={(e) => setTexts(e.target.value)}
           placeholder='やることを入力'
@@ -72,9 +91,17 @@ function App() {
           onKeyDown={newTodo}
         />
 
+        {/* 検索用キーワード欄 */}
+        <input
+          type='text'
+          value={searchText}
+          placeholder='検索キーワード'
+          onChange={(e) => setSearchText(e.target.value)}
+        />
+
         {/* デフォルトのtodoListの表示 */}
         <ul>
-          {todos.map(todo => {
+          {filteredTodos.map(todo => {
             return <li key={todo.id}>{todo.title}</li>
           })}
         </ul>
