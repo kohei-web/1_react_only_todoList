@@ -1,5 +1,7 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo } from 'react';
 import './App.css'
+/* styles */
+import styles from "./style.module.css";
 
 // デフォルトで表示されているtodoList
 const todoList = [
@@ -37,6 +39,9 @@ function App() {
 
   // 入力されたテキストから新しいtodoを作成する処理
   const newTodo = (e) => {
+    // IME変換確定中（日本語入力中）ならスルー
+    if (e.isComposing) return;
+
     // Enterがクリックかつ入力欄が空ではない時にtodoを追加する
     if (e.key === 'Enter' && text !== "") {
 
@@ -74,6 +79,15 @@ function App() {
     // useMemoはいずれかの値が変更された時にtodos, searchTextの値を使用して第一引数の関数を再計算する処理
   }, [todos, searchText]);
 
+  // 削除処理関数
+  // 現在のtodoListと一致するidをtodoListから除外して新しい配列を作成して表示させる
+  const handleDeleteTodo = (targetId) => {
+    // 除外して新しい配列を作るから一致しないものを新しい配列として作成
+    const newTodoList = todos.filter((todo) => todo.id !== targetId)
+
+    setTodos(newTodoList);
+  };
+
   return (
     <>
       <div>
@@ -88,7 +102,7 @@ function App() {
           // todoの生成とtodoListへの追加処理
           // 明示的にeの記述をしなくてもイベントハンドラでeが呼び出し先の関数に渡される
           // (e) => newTodo(e)←これはやらなくてもよい
-          onKeyDown={newTodo}
+          onKeyUp={newTodo}
         />
 
         {/* 検索用キーワード欄 */}
@@ -102,7 +116,17 @@ function App() {
         {/* デフォルトのtodoListの表示 */}
         <ul>
           {filteredTodos.map(todo => {
-            return <li key={todo.id}>{todo.title}</li>
+            return (
+              <li className={styles.list} key={todo.id}>
+                <span>{todo.title}</span>
+                <button
+                  onClick={() => handleDeleteTodo(todo.id)}
+                  className={styles.deleteButton}
+                >
+                  削除ボタン
+                </button>
+              </li>
+            )
           })}
         </ul>
       </div>

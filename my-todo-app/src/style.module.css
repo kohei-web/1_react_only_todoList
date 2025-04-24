@@ -1,0 +1,11 @@
+.list {
+    margin-top: 10px;
+}
+
+.list:first-child {
+    margin-top: 0px;
+}
+
+.deleteButton {
+    margin-left: 15px;
+}
